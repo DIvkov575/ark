@@ -12,13 +12,14 @@
     "test_image_transformers": ["scale_2d"],
     "test_tensor_transformers": ["force_num_chan_2d", "normalize_2d"],
     "additional": null,
-    "snapshot": "models/snapshots/mgh_mammo_density_sep26_2018.pt",
+    "snapshot": "~/.mirai/snapshots/mgh_mammo_density_sep26_2018.pt",
     "model_name": "mirai_density",
     "video": false,
     "use_precomputed_hiddens": false,
     "use_risk_factors": false,
     "callibrator_path": null,
     "survival_analysis_setup": false,
-    "pred_risk_factors": false
+    "pred_risk_factors": false,
+    "remote_snapshot_uri": "https://www.dropbox.com/scl/fi/gjc11cyww9nog9zkgbdx6/snapshots_v0.15.0.zip?rlkey=31b7l6jkn4w9ext2savmeyj8m&st=b1fwb6re&dl=1"
   }
 }

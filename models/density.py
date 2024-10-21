@@ -1,4 +1,5 @@
 import logging
+import os
 import tempfile
 
 import numpy as np
@@ -10,6 +11,7 @@ import torch.nn.functional as F
 
 import onconet.transformers.factory as transformer_factory
 from models.base import BaseModel, ArgsDict
+from onconet.models.mirai_full import MiraiModel
 from models.utils import dicom_to_image_dcmtk, dicom_to_arr
 from onconet.transformers.basic import ComposeTrans
 from onconet.utils import parsing
@@ -20,14 +22,22 @@ logger = logging.getLogger('ark')
 class DensityModel(BaseModel):
     def __init__(self, args):
         super().__init__()
-        self.args = ArgsDict(args)
+        self.args = args
         self.required_data = None
+
+    @staticmethod
+    def download_if_needed(args, cache_dir='~/.mirai'):
+        cache_dir = os.path.expanduser(cache_dir)
+        args.snapshot = os.path.expanduser(args.snapshot)
+        MiraiModel.download_if_needed(args, cache_dir)
 
     def load_model(self):
         logger.info("Loading model...")
         self.args.cuda = self.args.cuda and torch.cuda.is_available()
 
-        model = torch.load(self.args.snapshot, map_location='cpu')
+        self.download_if_needed(self.args)
+        model_path = os.path.expanduser(self.args.snapshot)
+        model = torch.load(model_path, map_location='cpu')
 
         # Unpack models taht were trained as data parallel
         if isinstance(model, nn.DataParallel):
@@ -79,15 +89,17 @@ class DensityModel(BaseModel):
             model = model.cpu()
             logger.debug("Inference with CPU")
 
-        ## Index 0 to toss batch dimension
-        pred_y = F.softmax(model(x, risk_factors)[0])[0]
+        model_output = model(x, risk_factors)
+        prediction_logits = model_output[0]
+        # Index 0 to toss batch dimension
+        pred_y = F.softmax(prediction_logits, dim=-1)[0]
         pred_y = np.array(self.label_map(pred_y.cpu().data.numpy()))
 
         logger.info("Pred: {}".format(pred_y))
 
         return pred_y
 
-    def run_model(self, dicom_files, payload=None):
+    def run_model(self, dicom_files, payload=None, **kwargs):
         if payload is None:
             payload = {
                 'dcmtk': True

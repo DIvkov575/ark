@@ -80,6 +80,9 @@ def cli_entrypoint(model_name="auto"):
 def cli_entrypoint_empty():
     cli_entrypoint("empty")
 
+def cli_entrypoint_density():
+    import onconet
+    cli_entrypoint("density")
 
 def cli_entrypoint_mirai():
     import onconet
