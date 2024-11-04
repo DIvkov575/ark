@@ -1,4 +1,5 @@
 import logging
+import io
 import os
 import tempfile
 
@@ -24,6 +25,8 @@ class DensityModel(BaseModel):
         super().__init__()
         self.args = args
         self.required_data = None
+        self.model = self.load_model()
+        self.__version__ = "0.1a"
 
     @staticmethod
     def download_if_needed(args, cache_dir='~/.mirai'):
@@ -39,7 +42,7 @@ class DensityModel(BaseModel):
         model_path = os.path.expanduser(self.args.snapshot)
         model = torch.load(model_path, map_location='cpu')
 
-        # Unpack models taht were trained as data parallel
+        # Unpack models that were trained as data parallel
         if isinstance(model, nn.DataParallel):
             model = model.module
 
@@ -99,39 +102,49 @@ class DensityModel(BaseModel):
 
         return pred_y
 
-    def run_model(self, dicom_files, payload=None, **kwargs):
+    def run_model(self, dicom_files, payload=None, to_dict=False, return_attentions=False):
+
+        logger = logging.getLogger('ark')
+        logger.info(f"Beginning inference with density model version {self.__version__}")
+        if isinstance(dicom_files[0], bytes):
+            dicom_files = [io.BytesIO(dicom_file) for dicom_file in dicom_files]
+        for ff in dicom_files:
+            ff.seek(0)
+        report = self._run_model(dicom_files, payload=payload)
+
+        return report
+
+    def _run_model(self, dicom_files, payload=None, **kwargs):
         if payload is None:
-            payload = {
-                'dcmtk': True
-            }
+            payload = {'dcmtk': False}
         elif 'dcmtk' not in payload:
-            payload['dcmtk'] = True
+            payload['dcmtk'] = False
 
-        if payload['dcmtk']:
-            logger.info('Using dcmtk')
-        else:
-            logger.info('Using pydicom')
-
-        model = self.load_model()
-
+        use_dcmtk = payload.get('dcmtk', False)
         preds = []
 
         for dicom in dicom_files:
-            dicom_path = tempfile.NamedTemporaryFile(suffix='.dcm').name
-            image_path = tempfile.NamedTemporaryFile(suffix='.png').name
-
             dicom.seek(0)
-            dicom.save(dicom_path)
+            if use_dcmtk:
+                logger.debug(f"Using dcmtk")
+                dicom_tmp_file = tempfile.NamedTemporaryFile(suffix='.dcm')
+                image_tmp_file = tempfile.NamedTemporaryFile(suffix='.png')
+                dicom_path = dicom_tmp_file.name
+                image_path = image_tmp_file.name
+                logger.debug("Temp DICOM path: {}".format(dicom_path))
+                logger.debug("Temp image path: {}".format(image_path))
 
-            if payload['dcmtk']:
+                dicom_tmp_file.write(dicom.read())
+
                 image = dicom_to_image_dcmtk(dicom_path, image_path)
                 logger.debug('Image mode: {}'.format(image.mode))
             else:
-                dicom = pydicom.dcmread(dicom_path)
-                image = dicom_to_arr(dicom, pillow=True)
+                logger.debug(f"Using pydicom")
+                dicom_obj = pydicom.dcmread(dicom)
+                image = dicom_to_arr(dicom_obj, pillow=True)
 
             risk_factor_vector = None
-            preds.append(self.process_image(image, model, risk_factor_vector))
+            preds.append(self.process_image(image, self.model, risk_factor_vector))
 
         counts = np.bincount(preds)
         y = np.argmax(counts)
