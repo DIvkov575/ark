@@ -11,11 +11,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import onconet.transformers.factory as transformer_factory
-from models.base import BaseModel, ArgsDict
 from onconet.models.mirai_full import MiraiModel
-from models.utils import dicom_to_image_dcmtk, dicom_to_arr
 from onconet.transformers.basic import ComposeTrans
 from onconet.utils import parsing
+
+from models.base import BaseModel, ArgsDict
+from models.utils import dicom_to_image_dcmtk, dicom_to_arr
+import version
+
 
 logger = logging.getLogger('ark')
 
@@ -25,8 +28,8 @@ class DensityModel(BaseModel):
         super().__init__()
         self.args = args
         self.required_data = None
-        self.model = self.load_model()
-        self.__version__ = "0.1a"
+        self._model = self.load_model()
+        self.__version__ = version.__version__
 
     @staticmethod
     def download_if_needed(args, cache_dir='~/.mirai'):
@@ -116,11 +119,11 @@ class DensityModel(BaseModel):
 
     def _run_model(self, dicom_files, payload=None, **kwargs):
         if payload is None:
-            payload = {'dcmtk': False}
+            payload = {'dcmtk': True}
         elif 'dcmtk' not in payload:
-            payload['dcmtk'] = False
+            payload['dcmtk'] = True
 
-        use_dcmtk = payload.get('dcmtk', False)
+        use_dcmtk = payload.get('dcmtk', True)
         preds = []
 
         for dicom in dicom_files:
@@ -144,7 +147,7 @@ class DensityModel(BaseModel):
                 image = dicom_to_arr(dicom_obj, pillow=True)
 
             risk_factor_vector = None
-            preds.append(self.process_image(image, self.model, risk_factor_vector))
+            preds.append(self.process_image(image, self._model, risk_factor_vector))
 
         counts = np.bincount(preds)
         y = np.argmax(counts)
