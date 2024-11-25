@@ -156,6 +156,22 @@ def set_routes(app):
         response, response_code, dicom_files = _predict_wrapper(app, _parse_form_request)
         return response, response_code
 
+    @app.route('/density/png/files', methods=['POST'])
+    def density_png():
+        """Endpoint to upload PNG files (no further preprocessing)
+        """
+        app.logger.debug("Request received at density/png/files")
+        model = app.config['MODEL']
+        import models.density
+        assert isinstance(model, models.density.DensityModel)
+        response = {'data': None, 'metadata': None, 'message': None, 'statusCode': 200}
+        files, payload, return_attentions = _parse_form_request(response)
+        data = model.run_model_raw(files)
+        response['data'] = data
+        response_code = 200
+
+        return response, response_code
+
     @app.route('/dicom-web/studies', methods=['POST'])
     @app.route('/dicom-web/studies/<study_instance_uid>', methods=['POST'])
     def handle_store(study_instance_uid=None):

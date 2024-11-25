@@ -70,7 +70,7 @@ class DensityModel(BaseModel):
         return density_labels[pred]
 
     def process_image(self, image, model, risk_factor_vector=None):
-        logger.info("Processing image...")
+        logger.debug("Processing image...")
 
         test_image_transformers = parsing.parse_transformers(self.args.test_image_transformers)
         test_tensor_transformers = parsing.parse_transformers(self.args.test_tensor_transformers)
@@ -101,7 +101,7 @@ class DensityModel(BaseModel):
         pred_y = F.softmax(prediction_logits, dim=-1)[0]
         pred_y = np.array(self.label_map(pred_y.cpu().data.numpy()))
 
-        logger.info("Pred: {}".format(pred_y))
+        logger.debug("Pred: {}".format(pred_y))
 
         return pred_y
 
@@ -148,6 +148,23 @@ class DensityModel(BaseModel):
 
             risk_factor_vector = None
             preds.append(self.process_image(image, self._model, risk_factor_vector))
+
+        counts = np.bincount(preds)
+        y = np.argmax(counts)
+
+        if isinstance(y, np.generic):
+            y = y.item()
+
+        report = {'predictions': y}
+
+        return report
+
+    def run_model_raw(self, image_files):
+        from PIL import Image
+        preds = []
+        for image in image_files:
+            pil_image = Image.open(image)
+            preds.append(self.process_image(pil_image, self._model))
 
         counts = np.bincount(preds)
         y = np.argmax(counts)
