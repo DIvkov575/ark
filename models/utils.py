@@ -92,7 +92,7 @@ def dicom_to_image_dcmtk(dicom_path, image_path):
     default_window_width = "580"
 
     dcm_file = pydicom.dcmread(dicom_path)
-    manufacturer = dcm_file.Manufacturer
+    manufacturer = getattr(dcm_file, "Manufacturer", "Unknown Manufacturer")
     voi_lut_exists = (0x0028, 0x3010) in dcm_file and len(dcm_file[(0x0028, 0x3010)].value) > 0
 
     # SeriesDescription is not a required attribute, see
@@ -107,7 +107,7 @@ def dicom_to_image_dcmtk(dicom_path, image_path):
     elif 'C-View' in ser_desc and voi_lut_exists:
         Popen(['dcmj2pnm', '+on2', '+Ww', default_window_level, default_window_width, dicom_path, image_path]).wait()
     else:
-        logger.warning("Manufacturer not GE or C-View/VOI LUT doesn't exist, defaulting to min-max window algorithm")
+        logger.debug("Manufacturer not GE or C-View/VOI LUT doesn't exist, defaulting to min-max window algorithm")
         Popen(['dcmj2pnm', '+on2', '--min-max-window', dicom_path, image_path]).wait()
 
     return Image.open(image_path)
