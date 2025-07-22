@@ -4,7 +4,6 @@ import json
 import os
 
 
-import dotenv
 
 from api import __version__ as api_version
 
@@ -19,12 +18,11 @@ def configure_loggers():
     for name in logger_names:
         configure_logger(loglevel=log_level, logger_name=name)
 
-
 def common_setup():
+    from dotenv import load_dotenv
     ENV_FILE = os.getenv('ARK_ENV_FILE', None)
     if ENV_FILE:
-        dotenv.load_dotenv(ENV_FILE)
-
+        load_dotenv(ENV_FILE)
     configure_loggers()
 
 def set_config_by_name(model_name):

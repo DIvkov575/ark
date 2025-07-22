@@ -3,3 +3,6 @@
 .idea
 __pycache__
 snapshots
+build/
+dist/
+.python_version
