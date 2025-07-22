@@ -19,16 +19,17 @@ def cli_entrypoint(model_name="auto"):
     LOGLEVEL_KEY = "LOG_LEVEL"
     loglevel = os.environ.get(LOGLEVEL_KEY, "INFO")
     threads = os.environ.get("ARK_THREADS", "4")
+    host= os.environ.get("host", "8080")
     if platform.system() == "Windows":
         args = ["waitress-serve",
                 "--channel-timeout", "3600",
                 "--threads", threads,
-                "--port", "5000",
+                "--port",host,
                 "--call", "main:create_app"]
 
     else:
         args = ["gunicorn",
-                "--bind", "0.0.0.0:8081",
+                "--bind", f"0.0.0.0:{host}",
                 "--timeout", "0",
                 "--threads", threads,
                 "--log-level", loglevel,
