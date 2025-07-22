@@ -1,2 +1,0 @@
-[console_scripts]
-ark-run-mirai = ark_run:cli_entrypoint_mirai
