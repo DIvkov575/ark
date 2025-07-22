@@ -1,66 +1,155 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ark</title>
+    <title>Ark Project Interface</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-
-<div id="mainContainer">
-
-    <div id="topRow">
-        <div class="textDisplay" id="infoBox">
-            <div id="infoResponse"></div>
-            <button id="loadInfoBtn">Load Info</button>
+    <header>
+        <div class="header-content">
+            <div class="header-main">
+                <h1>Ark</h1>
+            </div>
         </div>
+    </header>
 
-        <form id="upload-form">
-            <div>Select DICOM files to submit for prediction
-            <br>
-                <small>Must be multiple .dcm files, not a zip file or folder.</small>
-            </div><br>
-            <input type="file" id="fileElem" multiple accept="*" onchange="updateFileList()">
-            <ul id="fileList"><li>No files selected!</li></ul>
-            <button type="submit">Submit Files</button>
-        </form>
+    <main id="mainContainer">
+        <section id="topContent">
+            <aside class="panel textDisplay" id="infoBox">
+                <div class="panel-header">
+                    <h2><i class="fas fa-info-circle"></i> Information Display</h2>
+                    <button id="loadInfoBtn" class="icon-button" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <div id="infoResponse">Failed to load info.</div>
+            </aside>
 
-        <div class="textDisplay" id="predictionResponse">Model prediction response will appear here</div>
-    </div>
+            <section class="panel" id="upload-section">
+                <div class="panel-header">
+                    <h2><i class="fas fa-cloud-upload-alt"></i> Submit DICOM Files</h2>
+                    <div class="help-tooltip">
+                        <i class="fas fa-question-circle"></i>
+                        <div class="tooltip-content">
+                            <p>Upload individual DICOM (.dcm) files for analysis</p>
+                            <p>Multiple files supported</p>
+                        </div>
+                    </div>
+                </div>
+                <form id="upload-form">
+                    <p>Select DICOM files to submit for prediction.</p>
+                    <p class="note"><i class="fas fa-info"></i> <em>Must be multiple .dcm files, not a zip file or folder.</em></p>
+                    
+                    <div class="file-input-wrapper">
+                        <input type="file" id="fileElem" multiple accept=".dcm" onchange="updateFileList()">
+                        <label for="fileElem" class="file-input-button">
+                            <i class="fas fa-folder-open"></i>
+                            Browse Files
+                        </label>
+                    </div>
 
-        <div id="nextRow">
-        {% if show_scores_link %}
-        <pre>    Download All Saved Scores:<br>
-    <a href="/scores?format=jsonl">JSON Lines</a><br>
-    <a href="/scores?format=csv">CSV</a><br>
-        </pre>
-        {% endif %}
-    </div>
+                    <ul id="fileList"><li>No files selected!</li></ul>
+                    <button type="submit" class="button primary">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Files
+                    </button>
+                </form>
+            </section>
 
-    <hr> <!-- Horizontal line for separation -->
+            <aside class="panel textDisplay" id="predictionResponse">
+                <div class="panel-header">
+                    <h2><i class="fas fa-chart-line"></i> Prediction Result</h2>
+                    <button class="icon-button" title="Export Results" disabled>
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+                <div class="result-content">
+                    Model prediction response will appear here.
+                </div>
+            </aside>
+        </section>
 
-    <div id="linksSection">
-        <h3>Links</h3>
-        <ul>
-            <li><a href="https://github.com/reginabarzilaygroup/ark/wiki">Ark (project behind this site)</a></li>
-            <li><a href="https://github.com/reginabarzilaygroup/Mirai/wiki">Mirai</a>
-                <ul>
-                    <li><a href="https://github.com/reginabarzilaygroup/Mirai/releases/latest/download/mirai_demo_data.zip">Example mammogram</a></li>
-                </ul>
-            </li>
-            <li><a href="https://github.com/reginabarzilaygroup/Sybil/wiki">Sybil</a>
-                <ul>
-                    <li><a href="https://www.dropbox.com/scl/fi/covbvo6f547kak4em3cjd/sybil_example.zip?rlkey=7a13nhlc9uwga9x7pmtk1cf1c&dl=1">Example LDCT scan</a></li>
-                </ul>
-            </li>
-            <li><a href="https://hub.docker.com/u/mitjclinic">MIT J-Clinic Docker Hub</a></li>
-            <li><a href="https://jclinic.mit.edu/">MIT Jameel Clinic Home</a></li>
-        </ul>
-    </div>
+        <section id="scoreDownloads" class="panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-archive"></i> Download Saved Scores</h2>
+            </div>
+            <p>Download all previously saved prediction scores:</p>
+            <div class="download-links">
+                <a href="/scores?format=jsonl" class="button secondary">
+                    <i class="fas fa-file-code"></i>
+                    JSON Lines
+                </a>
+                <a href="/scores?format=csv" class="button secondary">
+                    <i class="fas fa-file-csv"></i>
+                    CSV
+                </a>
+            </div>
+        </section>
 
-    </div>
+        <div class="divider"></div>
 
-<script src="/static/script.js"></script>
+        <nav id="linksSection">
+            <h2><i class="fas fa-link"></i> Related Projects & Links</h2>
+            <div class="links-grid">
+                <div class="link-card primary-card">
+                    <div class="card-header">
+                        <i class="fas fa-cube"></i>
+                        <h3><a href="https://github.com/reginabarzilaygroup/ark/wiki">Ark</a></h3>
+                    </div>
+                    <p class="card-description">Core platform documentation</p>
+                </div>
+
+                <div class="link-card">
+                    <div class="card-header">
+                        <i class="fas fa-user-md"></i>
+                        <h3><a href="https://github.com/reginabarzilaygroup/Mirai/wiki">Mirai</a></h3>
+                    </div>
+                    <p class="card-description">Mammography risk assessment</p>
+                    <div class="card-links">
+                        <a href="https://github.com/reginabarzilaygroup/Mirai/releases/latest/download/mirai_demo_data.zip" class="sample-link">
+                            <i class="fas fa-download"></i> Example mammogram
+                        </a>
+                    </div>
+                </div>
+
+                <div class="link-card">
+                    <div class="card-header">
+                        <i class="fas fa-lungs"></i>
+                        <h3><a href="https://github.com/reginabarzilaygroup/Sybil/wiki">Sybil</a></h3>
+                    </div>
+                    <p class="card-description">Lung cancer screening</p>
+                    <div class="card-links">
+                        <a href="https://www.dropbox.com/scl/fi/covbvo6f547kak4em3cjd/sybil_example.zip?rlkey=7a13nhlc9uwga9x7pmtk1cf1c&dl=1" class="sample-link">
+                            <i class="fas fa-download"></i> Example LDCT scan
+                        </a>
+                    </div>
+                </div>
+
+                <div class="link-card">
+                    <div class="card-header">
+                        <i class="fab fa-docker"></i>
+                        <h3><a href="https://hub.docker.com/u/mitjclinic">Docker Hub</a></h3>
+                    </div>
+                    <p class="card-description">MIT J-Clinic containers</p>
+                </div>
+
+                <div class="link-card institutional">
+                    <div class="card-header">
+                        <i class="fas fa-university"></i>
+                        <h3><a href="https://jclinic.mit.edu/">MIT Jameel Clinic</a></h3>
+                    </div>
+                    <p class="card-description">Healthcare AI research</p>
+                </div>
+            </div>
+        </nav>
+    </main>
+
+    <script src="/static/script.js"></script>
 </body>
 </html>
