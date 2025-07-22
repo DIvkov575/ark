@@ -8,13 +8,13 @@ from version import __version__
 import importlib.util
 
 from .base import EmptyModel
-from .density import DensityModel
+# from .density import DensityModel
 from .mirai import MiraiModelWrapper
 
 model_dict = {
     'empty': EmptyModel,
     'mirai': MiraiModelWrapper,
-    'density': DensityModel
+    # 'density': DensityModel
 }
 
 # if importlib.util.find_spec('onconet') is not None:

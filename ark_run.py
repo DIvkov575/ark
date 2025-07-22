@@ -48,7 +48,11 @@ if __name__ == '__main__':
     import subprocess
     import sys
 
+    import api
+    import api.app
     import api.config
+
+    import onconet
     from api.config import PROJECT_DIR, set_config_by_name
 
     cli_entrypoint("mirai")
