@@ -64,7 +64,7 @@ jobs:
       - name: Test built binaries (survive ≥15s or fail)
         run: |
           # Windows
-          $process = Start-Process -FilePath "./dist/ark_run.exe" -PassThru
+          $process = Start-Process -FilePath "./dist/ark_portable.exe" -PassThru
           Start-Sleep -Seconds 15
           if (! $process.HasExited) {
             Write-Host "Process survived 15 seconds, success!"
@@ -80,7 +80,7 @@ jobs:
       - name: Test built binaries (survive ≥15s or fail)
         run: |
           set -e
-          ./dist/ark_run &
+          ./dist/ark_portable &
           pid=$!
           sleep 15
           if kill -0 "$pid" 2>/dev/null; then
@@ -97,13 +97,13 @@ jobs:
         if: matrix.platform == 'windows'
         run: |
           cd dist
-          7z a -tzip ../ark-${{ matrix.platform }}-${{ matrix.arch }}.zip ark_run.exe
+          7z a -tzip ../ark-${{ matrix.platform }}-${{ matrix.arch }}.zip ark_portable.exe
 
       - name: Create archive (Unix)
         if: matrix.platform != 'windows'
         run: |
           cd dist
-          tar -czf ../ark-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz ark_run
+          tar -czf ../ark-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz ark_portable
 
       - name: Upload Windows artifact
         if: matrix.platform == 'windows'
