@@ -12,9 +12,9 @@ a = Analysis(
     pathex=[str(current_dir)],
     binaries=[],
     datas=[
-        ('templates/*', 'templates'),
-        ('api/configs/*', 'api/configs'),
-        ('static/*', 'static'),
+        ('templates/', 'templates'),
+        ('api/configs/', 'api/configs'),
+        ('static/', 'static'),
         ('version.py', '.'),
         ('main.py', '.'),
         ('launcher.py', '.'),
