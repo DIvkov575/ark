@@ -70,6 +70,12 @@ header {
     gap: 2rem;
 }
 
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .header-main h1 {
     font-size: 2.5rem;
     font-weight: 700;
@@ -389,6 +395,17 @@ header {
     transform: translateY(-1px);
 }
 
+.button.danger {
+    background: linear-gradient(135deg, var(--danger-color) 0%, #c82333 100%);
+    color: white;
+}
+
+.button.danger:hover:not(:disabled) {
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
 .button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -645,6 +662,10 @@ header {
         flex-direction: column;
         text-align: center;
         gap: 1rem;
+    }
+    
+    .header-controls {
+        justify-content: center;
     }
     
     .links-grid {

@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import signal
 import traceback
 import time
 from typing import Mapping, Any, Dict
@@ -278,6 +279,29 @@ def set_routes(app):
             response['statusCode'] = 400
 
         return response, response['statusCode']
+
+    @app.route('/shutdown', methods=['POST'])
+    def shutdown():
+        """Endpoint to shutdown the server"""
+        app.logger.info("Shutdown request received")
+        
+        def shutdown_server():
+            func = request.environ.get('werkzeug.server.shutdown')
+            if func is None:
+                import threading
+                import time
+                def delayed_shutdown():
+                    time.sleep(1)  
+                    os.kill(os.getpid(), signal.SIGTERM)
+                
+                thread = threading.Thread(target=delayed_shutdown)
+                thread.daemon = True
+                thread.start()
+            else:
+                func()
+        
+        shutdown_server()
+        return {'message': 'Server shutting down...', 'statusCode': 200}
 
     @app.route('/', methods=['GET'])
     @app.route('/home', methods=['GET'])
