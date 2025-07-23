@@ -57,6 +57,14 @@ jobs:
           pip install -r requirements.txt
           pip install -e ".[mirai]"
 
+      # Force install ARM64 compatible packages for macOS ARM64
+      - name: Install ARM64 compatible packages (macOS ARM64)
+        if: matrix.platform == 'macos' && matrix.arch == 'arm64'
+        run: |
+          # Force reinstall torch with ARM64 support
+          pip uninstall -y torch torchvision torchaudio
+          pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+          
       - name: Build binary with PyInstaller
         run: |
           pyinstaller ark_portable.spec --clean --noconfirm
@@ -98,13 +106,11 @@ jobs:
         run: |
           cd dist
           7z a -tzip ../ark-${{ matrix.platform }}-${{ matrix.arch }}.zip ark_portable.exe
-
       - name: Create archive (Unix)
         if: matrix.platform != 'windows'
         run: |
           cd dist
           tar -czf ../ark-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz ark_portable
-
       - name: Upload Windows artifact
         if: matrix.platform == 'windows'
         uses: actions/upload-artifact@v4
