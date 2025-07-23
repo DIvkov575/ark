@@ -19,7 +19,7 @@ jobs:
             platform: linux
             arch: x64
             python-version: '3.8'
-          - os: macos-12
+          - os: macos-13
             platform: macos
             arch: intel
             python-version: '3.8'
