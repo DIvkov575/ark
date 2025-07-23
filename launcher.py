@@ -29,7 +29,7 @@ def main():
     print()
     
 
-    model_name = "auto"
+    model_name = "mirai"
     
     if len(sys.argv) > 1:
         model_arg = sys.argv[1].lower()
