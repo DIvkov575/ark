@@ -73,6 +73,7 @@ if __name__ == '__main__':
     import api
     import api.app
     import api.config
+    import socket
 
     import onconet
     from api.config import PROJECT_DIR, set_config_by_name
