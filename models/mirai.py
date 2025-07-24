@@ -1,8 +1,9 @@
 import io
 import logging
 
-from models.base import BaseModel
 from onconet.models.mirai_full import MiraiModel
+
+from models.base import BaseModel
 
 
 class MiraiModelWrapper(BaseModel):

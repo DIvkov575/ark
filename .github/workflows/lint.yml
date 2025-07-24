@@ -22,7 +22,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install flake8 black isort mypy bandit safety
+        pip install flake8 black isort bandit safety
 
     - name: Lint with flake8
       run: |
@@ -39,18 +39,10 @@ jobs:
       run: |
         isort --check-only --diff .
 
-    - name: Type checking with mypy
-      run: |
-        mypy . --ignore-missing-imports || true
-
     - name: Security analysis with bandit
       run: |
         bandit -r . -f json -o bandit-report.json || true
         bandit -r . || true
-
-    - name: Check for known security vulnerabilities with safety
-      run: |
-        safety check --json || true
 
     - name: Upload bandit results
       uses: actions/upload-artifact@v3

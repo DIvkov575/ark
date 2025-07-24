@@ -1,7 +1,7 @@
 import os
-import requests
 import zipfile
 
+import requests
 from requests_file import FileAdapter
 from werkzeug.datastructures import FileStorage
 

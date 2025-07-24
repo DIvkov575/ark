@@ -3,8 +3,8 @@ import os
 import sys
 import time
 import webbrowser
-
 from pathlib import Path
+
 import api.config
 from main import create_app
 

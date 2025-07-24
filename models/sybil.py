@@ -1,13 +1,14 @@
 import io
 import logging
-import tempfile
 import os
+import tempfile
 
 import numpy as np
+from sybil import Serie, Sybil
+from sybil import __version__ as sybil_version
+from sybil import collate_attentions
 
 from models.base import BaseModel
-from sybil import Serie, Sybil, collate_attentions
-from sybil import __version__ as sybil_version
 
 logger = logging.getLogger("ark")
 

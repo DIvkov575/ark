@@ -11,7 +11,7 @@ DEFAULT_CONFIG_PATH = os.path.join(CONFIG_DIR, "empty.json")
 
 
 def configure_loggers():
-    from api.logging_utils import configure_logger, LOGLEVEL_KEY
+    from api.logging_utils import LOGLEVEL_KEY, configure_logger
 
     log_level = os.environ.get(LOGLEVEL_KEY, "INFO").upper()
     logger_names = ["ark", "mirai", "sybil"]

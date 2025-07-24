@@ -2,17 +2,17 @@ import logging
 import tempfile
 
 import numpy as np
+import onconet.transformers.factory as transformer_factory
 import pydicom
 import torch
 import torch.autograd as autograd
 import torch.nn as nn
 import torch.nn.functional as F
-
-import onconet.transformers.factory as transformer_factory
-from models.base import BaseModel, ArgsDict
-from models.utils import dicom_to_image_dcmtk, dicom_to_arr
 from onconet.transformers.basic import ComposeTrans
 from onconet.utils import parsing
+
+from models.base import ArgsDict, BaseModel
+from models.utils import dicom_to_arr, dicom_to_image_dcmtk
 
 logger = logging.getLogger("ark")
 

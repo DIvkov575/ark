@@ -8,12 +8,12 @@ import time
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict, Mapping
+from typing import Dict, List, Mapping, Union
 
 import pydicom
 import requests
 from pydicom.dataset import Dataset, FileDataset, FileMetaDataset
-from pydicom.uid import generate_uid, BasicTextSRStorage
+from pydicom.uid import BasicTextSRStorage, generate_uid
 
 import api.config
 import api.utils

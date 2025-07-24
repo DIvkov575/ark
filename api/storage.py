@@ -1,13 +1,11 @@
 import csv
-from io import StringIO
 import json
 import os
-
-from typing import Dict, List, Union, BinaryIO, Tuple
+from io import StringIO
+from typing import BinaryIO, Dict, List, Tuple, Union
 
 import pydicom
 import pydicom.dataset
-
 # from pydicom import dataset
 from pydicom.dataset import FileDataset
 
@@ -54,7 +52,7 @@ def extract_dicom_metadata(dicom_file: Union[DICOM_TYPE, FileDataset]) -> Dict:
     return metadata
 
 
-def save_scores(template_dcm: DICOM_TYPE, scores_dict: Dict, addl_info: Dict = None):
+def save_scores(template_dcm: DICOM_TYPE, scores_dict: Dict, addl_info: Dict | None = None):
     save_path = os.environ.get(ARK_SAVE_SCORES_PATH_KEY, DEFAULT_SAVE_PATH)
     save_dir = os.path.dirname(save_path)
     os.makedirs(save_dir, exist_ok=True)
