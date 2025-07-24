@@ -1,6 +1,7 @@
 from version import __version__
 
 from .base import EmptyModel
+
 # from .density import DensityModel
 from .mirai import MiraiModelWrapper
 
