@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
-# import os
-# import platform
-# import subprocess
-# import sys
-# import api.config
-# from api.config import PROJECT_DIR
+import os
+import platform
+import socket
+import subprocess
+import sys
+
+import api.config
+from api.config import PROJECT_DIR
 
 
 def find_free_port(start_port: int = 5000, end_port: int = 5020):
@@ -30,13 +32,23 @@ def find_free_port(start_port: int = 5000, end_port: int = 5020):
             continue
     return None
 
+
+
+
 def cli_entrypoint(model_name="auto"):
-    api.config.set_config_by_name("mirai")
+
+
+    if len(sys.argv) > 1:
+        model_name = sys.argv[1]
+
+    api.config.set_config_by_name(model_name)
 
     port = find_free_port()
     if port is None:
         print("Error: Could not find an available port in the range 5000-5020.", file=sys.stderr)
         sys.exit(1)
+
+    print(f"Found available port. Launching server on port {port}...")
 
     LOGLEVEL_KEY = "LOG_LEVEL"
     loglevel = os.environ.get(LOGLEVEL_KEY, "INFO")
@@ -57,25 +69,16 @@ def cli_entrypoint(model_name="auto"):
                 "--access-logfile", "-",
                 "main:create_app()"]
 
-    _ = subprocess.run(args, stdout=None, stderr=None, text=True, cwd=PROJECT_DIR)
+    proc = subprocess.run(args, stdout=None, stderr=None, text=True, cwd=PROJECT_DIR)
 
 
 
 
-    
-
-if __name__ == '__main__':
-    import os
-    import platform
-    import subprocess
-    import sys
-
-    import api
-    import api.app
-    import api.config
-    import socket
-
+def cli_entrypoint_mirai():
     import onconet
-    from api.config import PROJECT_DIR, set_config_by_name
-
     cli_entrypoint("mirai")
+
+
+
+if __name__ == "__main__":
+    cli_entrypoint_mirai()
