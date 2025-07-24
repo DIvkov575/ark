@@ -5,12 +5,13 @@ import signal
 import traceback
 import time
 from typing import Mapping, Any, Dict
+import logging
 
 from flask import Flask, request, send_from_directory, render_template
 import werkzeug.datastructures
 
 import pydicom
-import pydicom.uid
+# import pydicom.uid
 
 import api.utils
 from api import logging_utils
@@ -25,14 +26,16 @@ class Args(object):
 
 
 def set_model(config: Dict[str, Any]):
-    model_name = config['MODEL_NAME']
+    model_name = "mirai"
     model_args = config['MODEL_ARGS']
     model_args = Args(model_args)
+
+
 
     if model_name in model_dict:
         config['MODEL'] = model_dict[model_name](model_args)
     else:
-        raise KeyError("Model '{}' not found in model dictionary".format(model_name))
+        raise KeyError("Model '{}' not found in model dictionary: {}".format(model_name, model_dict))
 
 def _parse_multipart(response):
     """

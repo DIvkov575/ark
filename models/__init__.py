@@ -8,19 +8,23 @@ from version import __version__
 import importlib.util
 
 from .base import EmptyModel
+# from .density import DensityModel
+from .mirai import MiraiModelWrapper
 
 model_dict = {
-    'empty': EmptyModel
+    'empty': EmptyModel,
+    'mirai': MiraiModelWrapper,
+    # 'density': DensityModel
 }
 
-if importlib.util.find_spec('onconet') is not None:
-    from .mirai import MiraiModelWrapper
-    from .density import DensityModel
-    model_dict['mirai'] = MiraiModelWrapper
-    model_dict['density'] = DensityModel
+# if importlib.util.find_spec('onconet') is not None:
+#     from .mirai import MiraiModelWrapper
+#     from .density import DensityModel
+#     model_dict['mirai'] = MiraiModelWrapper
+#     model_dict['density'] = DensityModel
 
-if importlib.util.find_spec('sybil') is not None:
-    from .sybil import SybilModel
-    model_dict['sybil'] = SybilModel
+# if importlib.util.find_spec('sybil') is not None:
+#     from .sybil import SybilModel
+#     model_dict['sybil'] = SybilModel
 
 __all__ = ['__version__', 'model_dict']

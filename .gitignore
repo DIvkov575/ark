@@ -5,3 +5,5 @@ __pycache__
 snapshots
 build/
 dist/
+.python_version
+

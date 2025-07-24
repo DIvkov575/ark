@@ -6,7 +6,13 @@ import os
 from typing import Dict, List, Union, BinaryIO, Tuple
 
 import pydicom
-from pydicom import FileDataset
+import pydicom.dataset
+# from pydicom import dataset
+from pydicom.dataset import FileDataset
+# from pydicom import Dataset
+
+# from PyInstaller.utils.hooks import collect_all
+# datas, binaries, hiddenimports = collect_all('pydicom')
 
 DEFAULT_SAVE_PATH = os.path.expanduser("~/.ark/all_scores.jsonl")
 ARK_SAVE_SCORES_KEY = "ARK_SAVE_SCORES"
