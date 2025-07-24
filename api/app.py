@@ -13,10 +13,19 @@ from flask import Flask, render_template, request, send_from_directory
 import api.utils
 from api import logging_utils
 from api.logging_utils import get_info_dict
-from api.storage import (ARK_SAVE_SCORES_KEY, ARK_SAVE_SCORES_PATH_KEY,
-                         DEFAULT_SAVE_PATH, get_csv_from_jsonl, save_scores)
-from api.utils import (dicom_dir_walk, download_zip, get_environ_bool,
-                       validate_post_request)
+from api.storage import (
+    ARK_SAVE_SCORES_KEY,
+    ARK_SAVE_SCORES_PATH_KEY,
+    DEFAULT_SAVE_PATH,
+    get_csv_from_jsonl,
+    save_scores,
+)
+from api.utils import (
+    dicom_dir_walk,
+    download_zip,
+    get_environ_bool,
+    validate_post_request,
+)
 from models import model_dict
 
 # import pydicom.uid
