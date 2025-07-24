@@ -128,6 +128,9 @@ def send_dicom_dataset(dcm: Union[str, Path, Dataset], dest_ae_title, dest_host,
     """
     from pynetdicom import AE
 
+    logger = logging_utils.get_logger(LOGGER_NAME)
+
+
     # Initialize the DICOM Application Entity
     my_ae_title = "MY_AE_TITLE"
     ae = AE(ae_title=my_ae_title)
