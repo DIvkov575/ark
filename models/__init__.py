@@ -5,15 +5,14 @@ from version import __version__
 #   module. Another (current) solution is to check if the package is installed before import. See `set_model()` in
 #   api/app.py.
 
-import importlib.util
-
 from .base import EmptyModel
+
 # from .density import DensityModel
 from .mirai import MiraiModelWrapper
 
 model_dict = {
-    'empty': EmptyModel,
-    'mirai': MiraiModelWrapper,
+    "empty": EmptyModel,
+    "mirai": MiraiModelWrapper,
     # 'density': DensityModel
 }
 
@@ -27,4 +26,4 @@ model_dict = {
 #     from .sybil import SybilModel
 #     model_dict['sybil'] = SybilModel
 
-__all__ = ['__version__', 'model_dict']
+__all__ = ["__version__", "model_dict"]

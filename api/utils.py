@@ -5,6 +5,7 @@ import zipfile
 from requests_file import FileAdapter
 from werkzeug.datastructures import FileStorage
 
+
 def get_environ_bool(key, default="false"):
     value = os.environ.get(key, default)
     return value.lower() == "true"
@@ -24,11 +25,13 @@ def validate_post_request(req, required=None, max_size=8 * 10**8):
 
     over_content_length = req.content_length and req.content_length > max_size
     if req.form and over_content_length:
-        raise RuntimeError("Request data too large: {} > {}".format(req.content_length, max_size))
+        raise RuntimeError(
+            "Request data too large: {} > {}".format(req.content_length, max_size)
+        )
 
     if required is not None:
-        if 'data' in req.form:
-            data = req.form['data']
+        if "data" in req.form:
+            data = req.form["data"]
             invalid = []
 
             for item in required:
@@ -40,20 +43,20 @@ def validate_post_request(req, required=None, max_size=8 * 10**8):
         else:
             raise RuntimeError("'data' not in request JSON; {}".format(req.form.keys()))
 
-    if 'dicom' not in req.files:
+    if "dicom" not in req.files:
         raise RuntimeError("Request does not contain `dicom` array")
 
 
-def download_zip(uri, path='/tmp/', local_file=False):
-    zip_path = path + 'dicom.zip'
-    dir_path = path + 'dicom/'
+def download_zip(uri, path="/tmp/", local_file=False):
+    zip_path = path + "dicom.zip"
+    dir_path = path + "dicom/"
 
     # TODO: deactivate for prod
     s = requests.Session()
-    s.mount('file://', FileAdapter())
+    s.mount("file://", FileAdapter())
     results = s.get(uri)
 
-    with open(zip_path, 'wb') as f:
+    with open(zip_path, "wb") as f:
         f.write(results.content)
 
     with zipfile.ZipFile(zip_path) as f:
@@ -62,22 +65,23 @@ def download_zip(uri, path='/tmp/', local_file=False):
     os.remove(zip_path)
 
 
-def dicom_dir_walk(path='/tmp'):
+def dicom_dir_walk(path="/tmp"):
     import pydicom
-    dir_path = path + '/dicom'
+
+    dir_path = path + "/dicom"
 
     dicom_files = []
 
     for root, dirs, files in os.walk(dir_path):
-        if 'DICOMDIR' in files:
-            ds = pydicom.dcmread(os.path.join(root, 'DICOMDIR'))
+        if "DICOMDIR" in files:
+            ds = pydicom.dcmread(os.path.join(root, "DICOMDIR"))
 
             for instance in ds.DirectoryRecordSequence:
-                if instance[0x0004, 0x1430].value == 'IMAGE':
+                if instance[0x0004, 0x1430].value == "IMAGE":
                     ref = instance[0x0004, 0x1500].value
-                    file_path = os.path.join(root, '/'.join(ref))
+                    file_path = os.path.join(root, "/".join(ref))
 
-                    f = open(file_path, 'rb')
+                    f = open(file_path, "rb")
                     # TODO: change file IO
                     dicom_files.append(FileStorage(f))
 

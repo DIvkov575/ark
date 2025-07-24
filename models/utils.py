@@ -1,5 +1,5 @@
 import logging
-from collections import Iterable
+# from collections import Iterable
 from subprocess import Popen
 
 import numpy as np
@@ -7,10 +7,10 @@ import pydicom
 from PIL import Image
 from pydicom.pixel_data_handlers.util import apply_modality_lut, apply_voi_lut
 
-logger = logging.getLogger('ark')
+logger = logging.getLogger("ark")
 
 
-def apply_windowing(image, center, width, bit_depth=16, voi_type='LINEAR'):
+def apply_windowing(image, center, width, bit_depth=16, voi_type="LINEAR"):
     """Windowing function to transform image pixels for presentation.
     Must be run after a DICOM modality LUT is applied to the image.
     Windowing algorithm defined in DICOM standard:
@@ -27,10 +27,10 @@ def apply_windowing(image, center, width, bit_depth=16, voi_type='LINEAR'):
         ndarray: Numpy array of transformed images
     """
     y_min = 0
-    y_max = (2**bit_depth - 1)
+    y_max = 2**bit_depth - 1
     y_range = y_max - y_min
 
-    if voi_type == 'LINEAR':
+    if voi_type == "LINEAR":
         c = center - 0.5
         w = width - 1.0
 
@@ -42,10 +42,8 @@ def apply_windowing(image, center, width, bit_depth=16, voi_type='LINEAR'):
         image[above] = y_max
 
         if between.any():
-            image[between] = (
-                    ((image[between] - c) / w + 0.5) * y_range + y_min
-            )
-    elif voi_type == 'SIGMOID':
+            image[between] = ((image[between] - c) / w + 0.5) * y_range + y_min
+    elif voi_type == "SIGMOID":
         image = y_range / (1 + np.exp(-4 * (image - center) / width)) + y_min
 
     return image
@@ -93,22 +91,36 @@ def dicom_to_image_dcmtk(dicom_path, image_path):
 
     dcm_file = pydicom.dcmread(dicom_path)
     manufacturer = dcm_file.Manufacturer
-    voi_lut_exists = (0x0028, 0x3010) in dcm_file and len(dcm_file[(0x0028, 0x3010)].value) > 0
+    voi_lut_exists = (0x0028, 0x3010) in dcm_file and len(
+        dcm_file[(0x0028, 0x3010)].value
+    ) > 0
 
     # SeriesDescription is not a required attribute, see
     #   https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.7.3.html#table_C.7-5a
-    if hasattr(dcm_file, 'SeriesDescription'):
+    if hasattr(dcm_file, "SeriesDescription"):
         ser_desc = dcm_file.SeriesDescription
     else:
-        ser_desc = ''
+        ser_desc = ""
 
-    if 'GE' in manufacturer and voi_lut_exists:
-        Popen(['dcmj2pnm', '+on2', '--use-voi-lut', '1', dicom_path, image_path]).wait()
-    elif 'C-View' in ser_desc and voi_lut_exists:
-        Popen(['dcmj2pnm', '+on2', '+Ww', default_window_level, default_window_width, dicom_path, image_path]).wait()
+    if "GE" in manufacturer and voi_lut_exists:
+        Popen(["dcmj2pnm", "+on2", "--use-voi-lut", "1", dicom_path, image_path]).wait()
+    elif "C-View" in ser_desc and voi_lut_exists:
+        Popen(
+            [
+                "dcmj2pnm",
+                "+on2",
+                "+Ww",
+                default_window_level,
+                default_window_width,
+                dicom_path,
+                image_path,
+            ]
+        ).wait()
     else:
-        logger.warning("Manufacturer not GE or C-View/VOI LUT doesn't exist, defaulting to min-max window algorithm")
-        Popen(['dcmj2pnm', '+on2', '--min-max-window', dicom_path, image_path]).wait()
+        logger.warning(
+            "Manufacturer not GE or C-View/VOI LUT doesn't exist, defaulting to min-max window algorithm"
+        )
+        Popen(["dcmj2pnm", "+on2", "--min-max-window", dicom_path, image_path]).wait()
 
     return Image.open(image_path)
 
@@ -119,22 +131,22 @@ def dicom_to_arr(dicom, auto=True, index=0, pillow=False, overlay=False):
     if (0x0028, 0x1056) in dicom:
         voi_type = dicom[0x0028, 0x1056].value
     else:
-        voi_type = 'LINEAR'
+        voi_type = "LINEAR"
 
-    if 'GE' in dicom.Manufacturer:
-        logger.debug('GE')
+    if "GE" in dicom.Manufacturer:
+        logger.debug("GE")
         image = apply_voi_lut(image.astype(np.uint16), dicom, index=index)
 
         num_bits = dicom[0x0028, 0x3010].value[index][0x0028, 0x3002].value[2]
-        image *= 2**(16 - num_bits)
+        image *= 2 ** (16 - num_bits)
     elif auto:
-        logger.debug('auto')
+        logger.debug("auto")
         window_center = -600
         window_width = 1500
 
         image = apply_windowing(image, window_center, window_width, voi_type=voi_type)
     else:
-        logger.debug('minmax')
+        logger.debug("minmax")
         min_pixel = np.min(image)
         max_pixel = np.max(image)
         window_center = (min_pixel + max_pixel + 1) / 2
@@ -161,10 +173,10 @@ def dicom_to_arr(dicom, auto=True, index=0, pillow=False, overlay=False):
 
         arr = arr[:-4].reshape(old_shape)
         num_bits = dicom[0x0028, 0x3010].value[index][0x0028, 0x3002].value[2]
-        image[arr == 1] = 2 ** 16 - 1
+        image[arr == 1] = 2**16 - 1
 
     if pillow:
-        return Image.fromarray(image.astype(np.int32), mode='I')
+        return Image.fromarray(image.astype(np.int32), mode="I")
     else:
         return image
 
@@ -180,23 +192,27 @@ def get_dicom_info(dicom):
         int: binary integer 0 or 1 corresponding to the type of View Position
         int: binary integer 0 or 1 corresponding to the type of Image Laterality
     """
-    if not hasattr(dicom, 'ViewPosition'):
-        raise AttributeError('ViewPosition does not exist in DICOM metadata')
-    if not hasattr(dicom, 'ImageLaterality'):
-        raise AttributeError('ImageLaterality does not exist in DICOM metadata')
+    if not hasattr(dicom, "ViewPosition"):
+        raise AttributeError("ViewPosition does not exist in DICOM metadata")
+    if not hasattr(dicom, "ImageLaterality"):
+        raise AttributeError("ImageLaterality does not exist in DICOM metadata")
 
     view_str = dicom.ViewPosition
     side_str = dicom.ImageLaterality
 
-    valid_view = ['CC', 'MLO']
-    valid_side = ['R', 'L']
+    valid_view = ["CC", "MLO"]
+    valid_side = ["R", "L"]
 
     if view_str not in valid_view:
-        raise ValueError("Invalid View Position `{}`: must be in {}".format(view_str, valid_view))
+        raise ValueError(
+            "Invalid View Position `{}`: must be in {}".format(view_str, valid_view)
+        )
     if side_str not in valid_side:
-        raise ValueError("Invalid Image Laterality `{}`: must be in {}".format(side_str, valid_side))
+        raise ValueError(
+            "Invalid Image Laterality `{}`: must be in {}".format(side_str, valid_side)
+        )
 
-    view = 0 if view_str == 'CC' else 1
-    side = 0 if side_str == 'R' else 1
+    view = 0 if view_str == "CC" else 1
+    side = 0 if side_str == "R" else 1
 
     return view, side

@@ -9,7 +9,7 @@ from models.base import BaseModel
 from sybil import Serie, Sybil, collate_attentions
 from sybil import __version__ as sybil_version
 
-logger = logging.getLogger('ark')
+logger = logging.getLogger("ark")
 
 
 class Args(object):
@@ -21,18 +21,20 @@ class SybilModel(BaseModel):
     def __init__(self, args):
         super().__init__()
         self.__version__ = sybil_version
-        name_or_path = os.getenv("ARK_SYBIL_MODEL_NAME", 'sybil_ensemble')
+        name_or_path = os.getenv("ARK_SYBIL_MODEL_NAME", "sybil_ensemble")
         self.model = Sybil(name_or_path=name_or_path)
 
-    def run_model(self, dicom_files, payload=None, to_dict=False, return_attentions=False):
+    def run_model(
+        self, dicom_files, payload=None, to_dict=False, return_attentions=False
+    ):
         dicom_paths = []
 
         for dicom in dicom_files:
             try:
-                dicom_file = tempfile.NamedTemporaryFile(suffix='.dcm', delete=False)
+                dicom_file = tempfile.NamedTemporaryFile(suffix=".dcm", delete=False)
                 dicom_path = dicom_file.name
 
-                if hasattr(dicom, 'save'):
+                if hasattr(dicom, "save"):
                     dicom.save(dicom_path)
                 else:
                     dicom = dicom.getvalue() if isinstance(dicom, io.BytesIO) else dicom
@@ -46,12 +48,14 @@ class SybilModel(BaseModel):
         serie = Serie(dicom_paths)
         N = len(dicom_paths)
         threads = int(os.getenv("SYBIL_THREADS", 0))
-        predictions = self.model.predict([serie], threads=threads, return_attentions=return_attentions)
+        predictions = self.model.predict(
+            [serie], threads=threads, return_attentions=return_attentions
+        )
 
         for dicom_path in dicom_paths:
             try:
                 os.unlink(dicom_path)
-            except Exception as e:
+            except Exception:
                 pass
 
         if to_dict:
@@ -68,6 +72,7 @@ class SybilModel(BaseModel):
         report = {"predictions": predictions}
 
         return report
+
 
 def array_to_list_nested(obj):
     if isinstance(obj, np.ndarray):

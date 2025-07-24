@@ -1,8 +1,5 @@
 import logging
-import multiprocessing
 import os
-import subprocess
-
 
 LOGGER_NAME = "ark"
 LOGLEVEL_KEY = "LOG_LEVEL"
@@ -10,9 +7,9 @@ LOGLEVEL_KEY = "LOG_LEVEL"
 
 def get_info_dict(config):
     info_dict = {
-        'apiVersion': config['API_VERSION'],
-        'modelName': config['MODEL_NAME'],
-        'modelVersion': config['MODEL'].__version__,
+        "apiVersion": config["API_VERSION"],
+        "modelName": config["MODEL_NAME"],
+        "modelVersion": config["MODEL"].__version__,
     }
     return info_dict
 
@@ -50,9 +47,10 @@ def configure_logger(loglevel=None, logger_name=LOGGER_NAME, logfile=None):
     logger.propagate = False
 
     formatter = _get_formatter(loglevel)
+
     def _prep_handler(handler):
         for ex_handler in logger.handlers:
-            if type(ex_handler) == type(handler):
+            if type(ex_handler) is type(handler):
                 # Remove old handler, don't want to double-handle
                 logger.removeHandler(ex_handler)
         handler.setLevel(loglevel)
@@ -82,5 +80,3 @@ def get_logger(base_name=LOGGER_NAME, multiprocessing_safe=False):
     if not logger.hasHandlers():
         configure_logger(logger_name=logger_name)
     return logger
-
-

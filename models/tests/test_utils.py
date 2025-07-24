@@ -21,5 +21,7 @@ class ModelUtilsTestCase(unittest.TestCase):
 
     def test_read_dicoms_valid(self):
         dicoms = read_dicoms(self.fps + [tempfile.NamedTemporaryFile().name])
-        dicoms_bool = [True if isinstance(d, pydicom.Dataset) else False for d in dicoms]
+        dicoms_bool = [
+            True if isinstance(d, pydicom.Dataset) else False for d in dicoms
+        ]
         self.assertTrue(all(dicoms_bool), msg="List of dicoms now all pydicom DataSets")

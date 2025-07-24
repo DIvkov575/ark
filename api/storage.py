@@ -7,8 +7,10 @@ from typing import Dict, List, Union, BinaryIO, Tuple
 
 import pydicom
 import pydicom.dataset
+
 # from pydicom import dataset
 from pydicom.dataset import FileDataset
+
 # from pydicom import Dataset
 
 # from PyInstaller.utils.hooks import collect_all
@@ -37,7 +39,13 @@ def extract_dicom_metadata(dicom_file: Union[DICOM_TYPE, FileDataset]) -> Dict:
     else:
         ds = pydicom.dcmread(dicom_file)
 
-    meta_keys = ['PatientID', 'AccessionNumber', 'StudyID', 'StudyInstanceUID', 'SeriesInstanceUID']
+    meta_keys = [
+        "PatientID",
+        "AccessionNumber",
+        "StudyID",
+        "StudyInstanceUID",
+        "SeriesInstanceUID",
+    ]
 
     metadata = dict()
     for key in meta_keys:
@@ -84,7 +92,7 @@ def get_csv_from_jsonl(file_path: str):
     final_data = []
     expand_field = "data"
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         for line in f:
             record = json.loads(line)
             final_record = record.copy()

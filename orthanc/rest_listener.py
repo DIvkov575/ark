@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
-import copy
-import traceback
-from datetime import datetime
 import functools
-import json
 import io
-import logging
+import json
 import os
 import sys
-from pathlib import Path
 import time
+import traceback
+from datetime import datetime
+from pathlib import Path
 from typing import List, Union, Dict, Mapping
 
-import requests
 import pydicom
+import requests
 from pydicom.dataset import Dataset, FileDataset, FileMetaDataset
 from pydicom.uid import generate_uid, BasicTextSRStorage
 
@@ -38,8 +36,11 @@ def read_dicom_images(file_paths: List[str]) -> List[pydicom.dataset.FileDataset
     return [pydicom.dcmread(file_path) for file_path in file_paths]
 
 
-def create_structured_report(template_ds: pydicom.dataset.FileDataset, analysis_results,
-                             code_meaning="Risk Scores"):
+def create_structured_report(
+    template_ds: pydicom.dataset.FileDataset,
+    analysis_results,
+    code_meaning="Risk Scores",
+):
     """
     Create a structured report object from a template DICOM file,
     and store the analysis results in the report.
@@ -63,7 +64,11 @@ def create_structured_report(template_ds: pydicom.dataset.FileDataset, analysis_
     sr_ds.StudyInstanceUID = template_ds.StudyInstanceUID
     sr_ds.SeriesInstanceUID = template_ds.SeriesInstanceUID
 
-    instance_entropy = [template_ds.StudyInstanceUID, template_ds.SeriesInstanceUID, template_ds.SOPInstanceUID]
+    instance_entropy = [
+        template_ds.StudyInstanceUID,
+        template_ds.SeriesInstanceUID,
+        template_ds.SOPInstanceUID,
+    ]
     sr_ds.SOPInstanceUID = generate_uid(entropy_srcs=instance_entropy)
 
     sr_ds.Modality = "SR"
@@ -75,8 +80,8 @@ def create_structured_report(template_ds: pydicom.dataset.FileDataset, analysis_
     # Add study information
     sr_ds.StudyDate = template_ds.StudyDate
     sr_ds.StudyTime = template_ds.StudyTime
-    sr_ds.ContentDate = datetime.now().strftime('%Y%m%d')
-    sr_ds.ContentTime = datetime.now().strftime('%H%M%S')
+    sr_ds.ContentDate = datetime.now().strftime("%Y%m%d")
+    sr_ds.ContentTime = datetime.now().strftime("%H%M%S")
 
     # Create a Referenced Series Sequence
     ref_series_item = Dataset()
@@ -86,23 +91,25 @@ def create_structured_report(template_ds: pydicom.dataset.FileDataset, analysis_
     sr_ds.ReferencedSeriesSequence = [ref_series_item]
 
     # Root Content Item (CONTAINER)
-    sr_ds.ValueType = 'CONTAINER'
-    sr_ds.ContinuityOfContent = 'SEPARATE'
+    sr_ds.ValueType = "CONTAINER"
+    sr_ds.ContinuityOfContent = "SEPARATE"
     sr_ds.ConceptNameCodeSequence = [Dataset()]
-    sr_ds.ConceptNameCodeSequence[0].CodeValue = '121071'
-    sr_ds.ConceptNameCodeSequence[0].CodingSchemeDesignator = 'DCM'
+    sr_ds.ConceptNameCodeSequence[0].CodeValue = "121071"
+    sr_ds.ConceptNameCodeSequence[0].CodingSchemeDesignator = "DCM"
     sr_ds.ConceptNameCodeSequence[0].CodeMeaning = code_meaning
 
     # Add the 6 numeric results as simple numeric items
     sr_ds.ContentSequence = []
     if isinstance(analysis_results, List):
-        analysis_results = {f"Year {idx+1}": result for idx, result in enumerate(analysis_results)}
+        analysis_results = {
+            f"Year {idx+1}": result for idx, result in enumerate(analysis_results)
+        }
 
     for key, value in analysis_results.items():
         item = Dataset()
         item.CodeMeaning = key
-        item.ValueType = 'NUM'
-        item.RelationshipType = 'CONTAINS'
+        item.ValueType = "NUM"
+        item.RelationshipType = "CONTAINS"
         item.NumericValue = value
 
         sr_ds.ContentSequence.append(item)
@@ -112,8 +119,13 @@ def create_structured_report(template_ds: pydicom.dataset.FileDataset, analysis_
     return sr_file
 
 
-def send_dicom_dataset(dcm: Union[str, Path, Dataset], dest_ae_title, dest_host, dest_port,
-                       requested_contexts=None):
+def send_dicom_dataset(
+    dcm: Union[str, Path, Dataset],
+    dest_ae_title,
+    dest_host,
+    dest_port,
+    requested_contexts=None,
+):
     """
     Send a DICOM file to an SCP/PACS server.
     Args:
@@ -129,7 +141,6 @@ def send_dicom_dataset(dcm: Union[str, Path, Dataset], dest_ae_title, dest_host,
     from pynetdicom import AE
 
     logger = logging_utils.get_logger(LOGGER_NAME)
-
 
     # Initialize the DICOM Application Entity
     my_ae_title = "MY_AE_TITLE"
@@ -218,21 +229,34 @@ def get_changes(since=0, limit=10_000, base_url=None):
     Last = changes["Last"]
 
     def _change_filter_series(change_dict):
-        return change_dict["ChangeType"] == "StableSeries" and change_dict["ResourceType"] == "Series"
+        return (
+            change_dict["ChangeType"] == "StableSeries"
+            and change_dict["ResourceType"] == "Series"
+        )
 
     def _change_filter_study(change_dict):
-        return change_dict["ChangeType"] == "StableStudy" and change_dict["ResourceType"] == "Study"
+        return (
+            change_dict["ChangeType"] == "StableStudy"
+            and change_dict["ResourceType"] == "Study"
+        )
 
     # Whether scans are grouped by Series or Study
     change_type = os.environ.get("ORTHANC_CHANGE_TYPE", "series").lower()
-    assert change_type in {"series", "study"}, f"Unknown change_type {change_type}, should be 'series' or 'study'"
-    _change_filter = _change_filter_study if change_type == "study" else _change_filter_series
+    assert change_type in {
+        "series",
+        "study",
+    }, f"Unknown change_type {change_type}, should be 'series' or 'study'"
+    _change_filter = (
+        _change_filter_study if change_type == "study" else _change_filter_series
+    )
 
     changes = list(filter(_change_filter, changes["Changes"]))
     return changes, Last
 
 
-def get_instances_for_group(group_path: str, base_url=None, modalities=None) -> List[Dict]:
+def get_instances_for_group(
+    group_path: str, base_url=None, modalities=None
+) -> List[Dict]:
     logger = logging_utils.get_logger(LOGGER_NAME)
 
     if base_url is None:
@@ -261,12 +285,13 @@ def get_instances_for_group(group_path: str, base_url=None, modalities=None) -> 
         image_buffer = io.BytesIO(image_bytes)
         image_ds = pydicom.dcmread(image_buffer)
         if image_ds.Modality not in modalities:
-            logger.debug(f"Skipping instance {instance_id} with modality {image_ds.Modality}")
+            logger.debug(
+                f"Skipping instance {instance_id} with modality {image_ds.Modality}"
+            )
             continue
 
         image_buffer.seek(0)
-        all_images.append({"ds": image_ds, "bytes": image_bytes,
-                           "ID": instance_id})
+        all_images.append({"ds": image_ds, "bytes": image_bytes, "ID": instance_id})
 
     return all_images
 
@@ -279,7 +304,9 @@ def process_new_change(model, change_dict: Dict, config: Mapping) -> List[Dict]:
     group_id, group_path = change_dict["ID"], change_dict["Path"]
 
     # Get the list of images in the group
-    all_image_instances = get_instances_for_group(group_path, modalities={config["Modality"]})
+    all_image_instances = get_instances_for_group(
+        group_path, modalities={config["Modality"]}
+    )
 
     if not all_image_instances:
         logger.debug(f"Skipping group {group_id} with no images")
@@ -289,12 +316,14 @@ def process_new_change(model, change_dict: Dict, config: Mapping) -> List[Dict]:
     template_ds = all_image_instances[0]["ds"]
     min_num_images = min_num_images_dict.get(template_ds.Modality, 0)
     if len(all_image_instances) < min_num_images:
-        logger.debug(f"Skipping {group_path} with {len(all_image_instances)} < {min_num_images} images")
+        logger.debug(
+            f"Skipping {group_path} with {len(all_image_instances)} < {min_num_images} images"
+        )
         return []
 
     logger.debug(f"Processing {group_path} with {len(all_image_instances)} images")
 
-    ### Perform analysis on the image
+    # Perform analysis on the image
     image_bytes = [image_dict["bytes"] for image_dict in all_image_instances]
 
     # For Mirai, whether to use dcmtk (default) or pydicom for extracting data from file.
@@ -305,7 +334,9 @@ def process_new_change(model, change_dict: Dict, config: Mapping) -> List[Dict]:
 
     prediction_scores = predictions["predictions"]
     code_meaning = f"{config['MODEL_NAME'].capitalize()} Risk Scores"
-    sr_ds = create_structured_report(template_ds, prediction_scores, code_meaning=code_meaning)
+    sr_ds = create_structured_report(
+        template_ds, prediction_scores, code_meaning=code_meaning
+    )
 
     # Send the structured report back to Orthanc
     response = send_dicom_http(sr_ds)
@@ -368,16 +399,20 @@ def main():
 
             # If any relevant changes are found, process them
             for change_dict in changes:
-                series_id, change_seq = change_dict["ID"], change_dict["Seq"]
+                series_id = change_dict["ID"]
 
                 all_image_instances = process_new_change(model, change_dict, config)
 
                 # If indicated, delete the images from Orthanc after processing
                 if no_store_images:
-                    instance_ids = [instance_dict["ID"] for instance_dict in all_image_instances]
+                    instance_ids = [
+                        instance_dict["ID"] for instance_dict in all_image_instances
+                    ]
 
                     if instance_ids:
-                        logger.info(f"Deleting {len(instance_ids)} instances from series {series_id}")
+                        logger.info(
+                            f"Deleting {len(instance_ids)} instances from series {series_id}"
+                        )
                         delete_multiple_instances(instance_ids)
 
             processed_dict["Last"] = Last
@@ -390,10 +425,13 @@ def main():
 
         time.sleep(polling_interval)
 
+
 def main_async():
     import multiprocessing
+
     process = multiprocessing.Process(target=main)
     process.start()
+
 
 if __name__ == "__main__":
     main()
