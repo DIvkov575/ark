@@ -2,7 +2,6 @@
 import os
 import sys
 
-import torchio
 import api
 import api.app
 import api.config
